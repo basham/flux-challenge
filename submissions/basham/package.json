@@ -29,8 +29,6 @@
     "css-loader": "0.23.1",
     "file-loader": "0.8.5",
     "html-webpack-plugin": "1.7.0",
-    "iu-ess-ux-components": "1.4.0",
-    "iu-ess-ux-icons": "1.1.0",
     "less": "2.5.3",
     "less-loader": "2.2.2",
     "normalize.css": "3.0.3",
