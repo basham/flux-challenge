@@ -1,5 +1,4 @@
 var autoprefixer = require('autoprefixer');
-var HtmlWebpackPlugin = require('html-webpack-plugin');
 var path = require('path');
 var qs = require('qs');
 var webpack = require('webpack');
@@ -28,26 +27,6 @@ var common = {
   },
   resolve: {
     extensions: ['', '.js', '.jsx'],
-    // All imports from external files should fallback
-    // to this project's Node module directory.
-    fallback: NODE_PATH
-  },
-  resolveLoader: {
-    // All Webpack loaders needed for external files should fallback
-    // to this project's Node module directory.
-    fallback: NODE_PATH
-  },
-  module: {
-    loaders: [
-      {
-        test: /\.html$/,
-        loader: 'file?name=[name].[ext]'
-      },
-      {
-        test: /\.svg$/,
-        loader: 'raw'
-      }
-    ]
   },
   postcss: function() {
     return [autoprefixer];
@@ -86,12 +65,11 @@ if(TARGET === 'dist') {
 
 function makeCSSLoader(localIdentName) {
   return {
-    test: /\.(css|less)$/,
+    test: /\.(css)$/,
     loaders: [
       'style',
       'css?modules&localIdentName=' + localIdentName,
-      'postcss',
-      'less'
+      'postcss'
     ]
   };
 }
