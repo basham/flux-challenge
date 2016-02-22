@@ -1,8 +1,29 @@
-import React, {Component} from 'react';
+import React from 'react';
+import {Component, FuncSubject} from 'rx-react';
+import Rx from 'rx';
 
 import styles from './styles.css';
 
+function currentPlanet(url) {
+  const connection = new WebSocket(url);
+  const ws = FuncSubject.create();
+  connection.onerror = (err) => {
+    //ws.onError(err);
+  }
+  connection.onmessage = (msg) => {
+    //ws.onNext(msg);
+    ws(msg);
+  }
+  return ws;
+}
+
 export default class App extends Component {
+  componentDidMount() {
+    this.currentPlanet$ = currentPlanet('ws://localhost:4000');
+    this.currentPlanet$
+      .map(({data}) => (JSON.parse(data)))
+      .subscribe((data) => { console.log('Current Planet', data) });
+  }
   render() {
     return (
       <div className={styles['app-container']}>
