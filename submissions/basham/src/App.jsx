@@ -17,48 +17,62 @@ function currentPlanet(url) {
   return ws;
 }
 
+function model(planet$) {
+  return planet$
+    .map(({data}) => JSON.parse(data))
+    .startWith(null)
+    .map((planet) => ({planet}));
+}
+
+function view(state) {
+  return (
+    <div className={styles['app-container']}>
+      <div className={styles['css-root']}>
+        <h1 className={styles['css-planet-monitor']}>
+          {state.planet
+            ? `Obi-Wan currently on ${state.planet.name}`
+            : 'Searching...'
+          }
+        </h1>
+        <section className={styles['css-scrollable-list']}>
+          <ul className={styles['css-slots']}>
+            <li className={styles['css-slot']}>
+              <h3>Jorak Uln</h3>
+              <h6>Homeworld: Korriban</h6>
+            </li>
+            <li className={styles['css-slot']}>
+              <h3>Skere Kaan</h3>
+              <h6>Homeworld: Coruscant</h6>
+            </li>
+            <li className={styles['css-slot']}>
+              <h3>Na'daz</h3>
+              <h6>Homeworld: Ryloth</h6>
+            </li>
+            <li className={styles['css-slot']}>
+              <h3>Kas'im</h3>
+              <h6>Homeworld: Nal Hutta</h6>
+            </li>
+            <li className={styles['css-slot']}>
+              <h3>Darth Bane</h3>
+              <h6>Homeworld: Apatros</h6>
+            </li>
+          </ul>
+          <div className={styles['css-scroll-buttons']}>
+            <button className={styles['css-button-up']}></button>
+            <button className={styles['css-button-down']}></button>
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+}
+
 export default class App extends Component {
-  componentDidMount() {
-    this.currentPlanet$ = currentPlanet('ws://localhost:4000');
-    this.currentPlanet$
-      .map(({data}) => (JSON.parse(data)))
-      .subscribe((data) => { console.log('Current Planet', data) });
+  getStateStream() {
+    const planet$ = currentPlanet('ws://localhost:4000');
+    return model(planet$);
   }
   render() {
-    return (
-      <div className={styles['app-container']}>
-        <div className={styles['css-root']}>
-          <h1 className={styles['css-planet-monitor']}>Obi-Wan currently on Tatooine</h1>
-          <section className={styles['css-scrollable-list']}>
-            <ul className={styles['css-slots']}>
-              <li className={styles['css-slot']}>
-                <h3>Jorak Uln</h3>
-                <h6>Homeworld: Korriban</h6>
-              </li>
-              <li className={styles['css-slot']}>
-                <h3>Skere Kaan</h3>
-                <h6>Homeworld: Coruscant</h6>
-              </li>
-              <li className={styles['css-slot']}>
-                <h3>Na'daz</h3>
-                <h6>Homeworld: Ryloth</h6>
-              </li>
-              <li className={styles['css-slot']}>
-                <h3>Kas'im</h3>
-                <h6>Homeworld: Nal Hutta</h6>
-              </li>
-              <li className={styles['css-slot']}>
-                <h3>Darth Bane</h3>
-                <h6>Homeworld: Apatros</h6>
-              </li>
-            </ul>
-            <div className={styles['css-scroll-buttons']}>
-              <button className={styles['css-button-up']}></button>
-              <button className={styles['css-button-down']}></button>
-            </div>
-          </section>
-        </div>
-      </div>
-    );
+    return view(this.state);
   }
 }
