@@ -48,7 +48,7 @@ function model(planetResponse$, darkJediResponse$) {
       (slots, darkJedi) => {
         // Inject the initial dark jedi in the middle of the slots.
         if(slots.every((slot) => slot === null)) {
-          const entryIndex = Math.floor(slots.length / 2);
+          const entryIndex = Math.floor(SLOT_COUNT / 2);
           return slots
             .map((slot, index) => (index === entryIndex ? darkJedi : slot));
         }
