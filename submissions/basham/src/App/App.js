@@ -39,7 +39,7 @@ function model(planetResponse$, darkJedi$) {
 
   const initialSlots = Array
     .from({length: SLOT_COUNT})
-    .map((value, index) => ({id: index}));
+    .map(() => null);
 
   const slots$ = darkJedi$
     .startWith(null)

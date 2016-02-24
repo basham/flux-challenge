@@ -26,7 +26,14 @@ export function view(state) {
   );
 }
 
-function renderSlot({homeworld, id, name = ''}) {
+let uuid = 0;
+
+function getUniqueId() {
+  return ++uuid;
+}
+
+function renderSlot(state) {
+  const {homeworld, id = getUniqueId(), name = ''} = state || {};
   const key = `slot-${id}`;
   const homeworldName = homeworld && homeworld.name
     ? `Homeworld: ${homeworld.name}`
