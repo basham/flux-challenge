@@ -29,8 +29,8 @@ function fetchDarkJedi(id) {
     .fromNodeCallback(req.end, req)()
 }
 
-function model(planetResponse$, darkJedi$) {
-  darkJedi$
+function model(planetResponse$, darkJediResponse$) {
+  darkJediResponse$
     .subscribe(x => console.log('---', x));
 
   const planet$ = planetResponse$
@@ -41,10 +41,19 @@ function model(planetResponse$, darkJedi$) {
     .from({length: SLOT_COUNT})
     .map(() => null);
 
-  const slots$ = darkJedi$
+  const slots$ = darkJediResponse$
+    .map(({body}) => body)
     .startWith(null)
     .scan(
-      (slots, darkJedi) => slots,
+      (slots, darkJedi) => {
+        // Inject the initial dark jedi in the middle of the slots.
+        if(slots.every((slot) => slot === null)) {
+          const entryIndex = Math.floor(slots.length / 2);
+          return slots
+            .map((slot, index) => (index === entryIndex ? darkJedi : slot));
+        }
+        return slots;
+      },
       initialSlots
     );
 
