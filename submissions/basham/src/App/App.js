@@ -7,6 +7,7 @@ import {view} from './App.view'
 const WS_PATH = 'ws://localhost:4000';
 const API_PATH = 'http://localhost:3000';
 const DARTH_SIDIOUS_ID = 3616;
+const SLOT_COUNT = 5;
 
 function currentPlanet(url) {
   const connection = new WebSocket(url);
@@ -36,14 +37,16 @@ function model(planetResponse$, darkJedi$) {
     .map(({data}) => JSON.parse(data))
     .startWith(null);
 
-  const slots$ = Rx.Observable
-    .just([
-      {name: 'Jorak Uln', homeworld: {name: 'Korriban'}, id: 0},
-      {name: 'Skere Kaan', homeworld: {name: 'Coruscant'}, id: 1},
-      {name: 'Na\'daz', homeworld: {name: 'Ryloth'}, id: 2},
-      {name: 'Kas\'im', homeworld: {name: 'Nal Hutta'}, id: 3},
-      {name: 'Darth Bane', homeworld: {name: 'Apatros'}, id: 4}
-    ]);
+  const initialSlots = Array
+    .from({length: SLOT_COUNT})
+    .map((value, index) => ({id: index}));
+
+  const slots$ = darkJedi$
+    .startWith(null)
+    .scan(
+      (slots, darkJedi) => slots,
+      initialSlots
+    );
 
   return Rx.Observable
     .combineLatest(

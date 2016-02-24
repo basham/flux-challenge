@@ -26,13 +26,17 @@ export function view(state) {
   );
 }
 
-function renderSlot({homeworld, id, name}) {
+function renderSlot({homeworld, id, name = ''}) {
+  const key = `slot-${id}`;
+  const homeworldName = homeworld && homeworld.name
+    ? `Homeworld: ${homeworld.name}`
+    : '';
   return (
     <li
       className={styles['css-slot']}
-      key={id}>
+      key={key}>
       <h3>{name}</h3>
-      <h6>Homeworld: {homeworld.name}</h6>
+      <h6>{homeworldName}</h6>
     </li>
   )
 }
