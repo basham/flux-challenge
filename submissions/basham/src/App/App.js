@@ -22,23 +22,23 @@ function fetchCurrentPlanet(url) {
   return ws;
 }
 
-function fetchDarkJedi(id) {
+function fetchSith(id) {
   const req = superagent
     .get(`${API_PATH}/dark-jedis/${id}`);
   return Rx.Observable
     .fromNodeCallback(req.end, req)()
 }
 
-function darkJediHTTP() {
+function sithHTTP() {
   const request = FuncSubject.create();
   const response$ = request
     .startWith(DARTH_SIDIOUS_ID)
-    .flatMap((id) => fetchDarkJedi(id));
+    .flatMap((id) => fetchSith(id));
   return {request, response$};
 }
 
-function model(planetResponse$, darkJediResponse$) {
-  darkJediResponse$
+function model(planetResponse$, sithResponse$) {
+  sithResponse$
     .subscribe(x => console.log('---', x));
 
   const planet$ = planetResponse$
@@ -49,7 +49,7 @@ function model(planetResponse$, darkJediResponse$) {
     .from({length: SLOT_COUNT})
     .map(() => null);
 
-  const slots$ = darkJediResponse$
+  const slots$ = sithResponse$
     .map(({body}) => body)
     .startWith(null)
     .scan(
@@ -90,7 +90,7 @@ function model(planetResponse$, darkJediResponse$) {
   return {slots$, state$};
 }
 
-function fetchMoreDarkJedi(slots$, request) {
+function fetchMoreSith(slots$, request) {
   slots$
     // Loop through each slots.
     .flatMap((slots) =>
@@ -122,10 +122,10 @@ function fetchMoreDarkJedi(slots$, request) {
 
 export default class App extends Component {
   getStateStream() {
-    const darkJedi = darkJediHTTP();
+    const sith = sithHTTP();
     const planetResponse$ = fetchCurrentPlanet(WS_PATH);
-    const {slots$, state$} = model(planetResponse$, darkJedi.response$);
-    fetchMoreDarkJedi(slots$, darkJedi.request);
+    const {slots$, state$} = model(planetResponse$, sith.response$);
+    fetchMoreSith(slots$, sith.request);
     return state$;
   }
   render() {
