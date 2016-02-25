@@ -53,14 +53,29 @@ function model(planetResponse$, darkJediResponse$) {
     .map(({body}) => body)
     .startWith(null)
     .scan(
-      (slots, darkJedi) => {
-        // Inject the initial dark jedi in the middle of the slots.
-        if(slots.every((slot) => slot === null)) {
+      (list, sith) => {
+        // Inject the initial sith in the middle of the list.
+        if(list.every((s) => s === null)) {
           const entryIndex = Math.floor(SLOT_COUNT / 2);
-          return slots
-            .map((slot, index) => (index === entryIndex ? darkJedi : slot));
+          return list
+            .map((s, index) => (index === entryIndex ? sith : s));
         }
-        return slots;
+        // Inject master sith in above their apprentice.
+        const indexOfApprentice = list.findIndex((s) => s && s.master.id === sith.id);
+        const indexAsMaster = indexOfApprentice - 1;
+        if(indexAsMaster >= 0 && indexAsMaster < list.length - 1) {
+          return list
+            .map((s, index) => (index === indexAsMaster ? sith : s));
+        }
+        // Inject apprentice sith below their master.
+        const indexOfMaster = list.findIndex((s) => s && s.apprentice.id === sith.id);
+        const indexAsApprentice = indexOfMaster + 1;
+        if(indexAsApprentice >= 1 && indexAsApprentice < list.length) {
+          return list
+            .map((s, index) => (index === indexAsApprentice ? sith : s));
+        }
+        // Return the original list if there's something amiss.
+        return list;
       },
       initialSlots
     );
@@ -88,8 +103,21 @@ function fetchMoreDarkJedi(slots$, request) {
         .reduce((a, b) => a.concat(b), [])
         // Keep only the id of each sith.
         .map(({id}) => id)
+        // Keep only sith ids that aren't already loaded
+        // and when they would be loaded, they would fit in the list.
+        .filter((id) => {
+          const first = slots[0];
+          const last = slots[slots.length - 1];
+          // Is before the first item.
+          const isMasterOfFirst = first && first.master.id === id;
+          // Is after the last item.
+          const isApprenticeOfLast = last && last.apprentice.id === id;
+          // Is already loaded.
+          const isSithInList = slots.findIndex((s) => s && s.id === id) !== -1;
+          return !isMasterOfFirst && !isApprenticeOfLast && !isSithInList;
+        })
     )
-    //.subscribe((id) => request(id))
+    .subscribe((id) => request(id))
 }
 
 export default class App extends Component {
