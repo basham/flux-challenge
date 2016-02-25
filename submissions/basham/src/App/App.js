@@ -39,7 +39,7 @@ function sithHTTP() {
 
 function model(planetResponse$, sithResponse$) {
   sithResponse$
-    .subscribe(x => console.log('---', x));
+    .subscribe(x => console.log('---', x.body));
 
   const planet$ = planetResponse$
     .map(({data}) => JSON.parse(data))
@@ -90,7 +90,32 @@ function model(planetResponse$, sithResponse$) {
   return {list$, state$};
 }
 
-function fetchMoreSith(list$, request) {
+function fetchMoreSith(list$, request, response$) {
+  let latestPending = {};
+  const pending$ = Rx.Observable
+    .merge(
+      request
+        .map((id) => ({id, isPending: true})),
+      response$
+        .map(({body}) => ({id: body.id, isPending: false}))
+    )
+    .scan(
+      (pending, {id, isPending}) => {
+        if(isPending) {
+          pending[id] = isPending;
+        }
+        else {
+          delete pending[id];
+          console.log('deleting', id);
+        }
+        return pending;
+      },
+      {}
+    )
+    .subscribe((pending) => {
+      latestPending = pending;
+    });
+
   list$
     // Loop through each list.
     .flatMap((list) =>
@@ -103,6 +128,8 @@ function fetchMoreSith(list$, request) {
         .reduce((a, b) => a.concat(b), [])
         // Keep only the id of each sith.
         .map(({id}) => id)
+        // Ignore ids which have pending requests.
+        .filter((id) => !latestPending[id])
         // Keep only sith ids that aren't already loaded
         // and when they would be loaded, they would fit in the list.
         .filter((id) => {
@@ -114,9 +141,12 @@ function fetchMoreSith(list$, request) {
           const isApprenticeOfLast = last && last.apprentice.id === id;
           // Is already loaded.
           const isSithInList = list.findIndex((s) => s && s.id === id) !== -1;
+          // Is not yet loaded, and is within range.
           return !isMasterOfFirst && !isApprenticeOfLast && !isSithInList;
         })
     )
+    .do((id) => console.log('++', latestPending))
+    .do((id) => console.log('++ **', id))
     .subscribe((id) => request(id))
 }
 
@@ -125,7 +155,7 @@ export default class App extends Component {
     const sith = sithHTTP();
     const planetResponse$ = fetchCurrentPlanet(WS_PATH);
     const {list$, state$} = model(planetResponse$, sith.response$);
-    fetchMoreSith(list$, sith.request);
+    fetchMoreSith(list$, sith.request, sith.response$);
     return state$;
   }
   render() {
