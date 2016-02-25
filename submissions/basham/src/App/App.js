@@ -56,11 +56,11 @@ function model(planetResponse$, sithResponse$) {
       (list, sith) => {
         // Inject the initial sith in the middle of the list.
         if(list.every((s) => s === null)) {
-          const entryIndex = Math.floor(SLOT_COUNT / 2);
+          const entryIndex = Math.floor(list.length / 2);
           return list
             .map((s, index) => (index === entryIndex ? sith : s));
         }
-        // Inject master sith in above their apprentice.
+        // Inject master sith above their apprentice.
         const indexOfApprentice = list.findIndex((s) => s && s.master.id === sith.id);
         const indexAsMaster = indexOfApprentice - 1;
         if(indexAsMaster >= 0 && indexAsMaster < list.length - 1) {
