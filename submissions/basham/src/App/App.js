@@ -45,11 +45,11 @@ function model(planetResponse$, sithResponse$) {
     .map(({data}) => JSON.parse(data))
     .startWith(null);
 
-  const initialSlots = Array
+  const initialList = Array
     .from({length: SLOT_COUNT})
     .map(() => null);
 
-  const slots$ = sithResponse$
+  const list$ = sithResponse$
     .map(({body}) => body)
     .startWith(null)
     .scan(
@@ -77,27 +77,27 @@ function model(planetResponse$, sithResponse$) {
         // Return the original list if there's something amiss.
         return list;
       },
-      initialSlots
+      initialList
     );
 
   const state$ = Rx.Observable
     .combineLatest(
       planet$,
-      slots$,
-      (planet, slots) => ({planet, slots})
+      list$,
+      (planet, list) => ({planet, list})
     );
 
-  return {slots$, state$};
+  return {list$, state$};
 }
 
-function fetchMoreSith(slots$, request) {
-  slots$
-    // Loop through each slots.
-    .flatMap((slots) =>
-      slots
-        // Find only slot items with content.
+function fetchMoreSith(list$, request) {
+  list$
+    // Loop through each list.
+    .flatMap((list) =>
+      list
+        // Find only sith with content.
         .filter(sith => sith !== null)
-        // Extract every apprentice and master combo into array.
+        // Extract every apprentice and master combo into an array.
         .map(({apprentice, master}) => [apprentice, master])
         // Flatten the array of arrays into a single array.
         .reduce((a, b) => a.concat(b), [])
@@ -106,14 +106,14 @@ function fetchMoreSith(slots$, request) {
         // Keep only sith ids that aren't already loaded
         // and when they would be loaded, they would fit in the list.
         .filter((id) => {
-          const first = slots[0];
-          const last = slots[slots.length - 1];
+          const first = list[0];
+          const last = list[list.length - 1];
           // Is before the first item.
           const isMasterOfFirst = first && first.master.id === id;
           // Is after the last item.
           const isApprenticeOfLast = last && last.apprentice.id === id;
           // Is already loaded.
-          const isSithInList = slots.findIndex((s) => s && s.id === id) !== -1;
+          const isSithInList = list.findIndex((s) => s && s.id === id) !== -1;
           return !isMasterOfFirst && !isApprenticeOfLast && !isSithInList;
         })
     )
@@ -124,8 +124,8 @@ export default class App extends Component {
   getStateStream() {
     const sith = sithHTTP();
     const planetResponse$ = fetchCurrentPlanet(WS_PATH);
-    const {slots$, state$} = model(planetResponse$, sith.response$);
-    fetchMoreSith(slots$, sith.request);
+    const {list$, state$} = model(planetResponse$, sith.response$);
+    fetchMoreSith(list$, sith.request);
     return state$;
   }
   render() {

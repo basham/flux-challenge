@@ -14,7 +14,7 @@ export function view(state) {
         </h1>
         <section className={styles['css-scrollable-list']}>
           <ul className={styles['css-slots']}>
-            {state.slots.map(renderSlot)}
+            {state.list.map(renderListItem)}
           </ul>
           <div className={styles['css-scroll-buttons']}>
             <button className={styles['css-button-up']}></button>
@@ -32,7 +32,7 @@ function getUniqueId() {
   return ++uuid;
 }
 
-function renderSlot(state) {
+function renderListItem(state) {
   const {homeworld, id = getUniqueId(), name = ''} = state || {};
   const key = `slot-${id}`;
   const homeworldName = homeworld && homeworld.name
